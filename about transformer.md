@@ -152,3 +152,87 @@ class BERTLayerNorm(nn.Module):
 
 大部分注意力值集中到自身token，无法有效利用上下文信息。
 
+# optimizer相关
+
+## 一、优化器总结
+
+$J_\theta$: 损失函数
+
+### 1.Gradient Descent 梯度下降
+
+$ \theta_{t+1} = \theta_{t} - \bigtriangledown_{t} = \theta_{t} - \eta \cdot\bigtriangledown_{\theta_{t}}J_{i}(\theta_t,x_i,y_i)$
+
+针对于每一个训练样本都进行一次梯度下降，不分组。
+
+### 2.Batch Gradient Descent 批量梯度下降
+
+$ \theta_{t+1} = \theta_{t} - \bigtriangledown_{t} = \theta_{t} - \eta \cdot\frac{1}{n}\sum_{i=1}^{n+1}\bigtriangledown_{\theta_{t}}J_{i}(\theta_t,x_i,y_i)$
+
+优点：
+
+- 当损失函数是凸函数（convex）时，BGD能收敛到全局最优；当损失函数非凸时，BGD能收敛到局部最优；
+
+缺点：
+
+- 每次都要根据全部的数据来计算梯度，梯度下降速度慢；
+- BGD不能在线训练，也不能根据新数据来实时更新模型；
+
+### 3.Stochastic Gradient Descent 随机梯度下降
+
+$ \theta_{t+1} = \theta_{t} - \bigtriangledown_{t} = \theta_{t} - \eta \cdot\bigtriangledown_{\theta_{t}}J_{i}(\theta_t,x_i,y_i)$动量 -- i 随机选取
+
+优点：
+
+- 缓慢降低学习率，几乎一定会收敛到局部或非局部最小值；
+- 快；
+- 可以根据新样本实施地更新模型；
+
+缺点：
+
+- 随机选择引入噪声，更新方向不一定正确，体现在曲线上就是loss的震荡会比较严重；
+- 无法克服局部最优的问题；
+
+### 4.Mini Batch Gradient Descent
+
+$ \theta_{t+1} = \theta_{t} - \bigtriangledown_{t} = \theta_{t} - \eta \cdot\frac{1}{m}\sum_{i=x}^{x+m-1}\bigtriangledown_{\theta_{t}}J_{i}(\theta_t,x_i,y_i)$
+
+m：批量的大小
+
+优点：
+
+- 收敛更加稳定；
+- 可以利用高度优化的矩阵库来加速计算过程；
+
+缺点：
+
+- 选择合适的学习率比较困难；
+- 容易被困在马鞍面的鞍点；
+
+### 5.Momentum  动量
+
+参数更新时一定程度上保留更新之前的更新方向
+
+新一轮动量：$m_{t+1} = \beta m_t + (1-\beta)\bigtriangledown_{\theta_{t}}J_{i}(\theta_t,x_i,y_i)$
+
+参数更新：$\theta_{t+1}=\theta_t-\alpha m_{t+1}$
+
+相比于SGD减小了震荡
+
+### 6.Nesterov Accelerated Gradient 涅斯捷罗夫梯度
+
+相比动量方法，改为了在上一步动量方向更进一点的位置计算梯度并更新参数
+
+新一轮动量：$m_{t+1} = \beta m_t + (1-\beta)\bigtriangledown_{\theta_{t}}J_{i}(\theta_t - \beta \cdot m_t)$
+
+参数更新：$\theta_{t+1}=\theta_t-\alpha m_{t+1}$
+
+### 7.Adagrad 自适应梯度
+
+在初期学习率一般比较大，因为这时的位置离最优点比较远；当训练快结束时，通常会降低学习率，因为快结束时离最优点比较近，这时使用大的学习率可能会跳过最优点。Adagrad 能使得参数的学习率在训练的过程中越来越小。
+
+令$g _t = \bigtriangledown _{\theta _ t}J(\theta_t)$ 代表t时间时的梯度
+
+$ \theta _ {t+1} = \theta_t - \frac{\eta}{\sqrt{\sum_{i = 1}^{t}{g_ t}^2 + \varepsilon}}g_t$
+
+
+
