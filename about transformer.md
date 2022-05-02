@@ -234,5 +234,54 @@ m：批量的大小
 
 $ \theta _ {t+1} = \theta_t - \frac{\eta}{\sqrt{\sum_{i = 1}^{t}{g_ t}^2 + \varepsilon}}g_t$
 
+优点：
 
+- 自动调节参数的学习率
+
+缺点：
+
+- 仍需手动设置学习率$\eta$
+- 学习率下降较快，因为分母一直在累计，可能提前结束了学习
+
+### 8.Adadelta
+
+Adadelta对于Adagrad做出了修改，比Adagrad更加稳定
+
+$ \theta _ {t+1} = \theta_t - \frac{\eta}{\sqrt{E[g^2]_t + \varepsilon}}g_t$
+
+$E[g^2]_t = \beta E[g^2]_{t-1} + (1-\beta)g_{t}^2$
+
+### 9.RMSprop Root Mean Squre propogation 均方根反向传播
+
+是Adadelta 中 beta = 0.5 的特例
+
+$ \theta _ {t+1} = \theta_t - \frac{\eta}{\sqrt{E[g^2]_t + \varepsilon}}g_t$
+
+$E[g^2]_t = 0.5 * E[g^2]_{t-1} + 0.5 * g_{t}^2$
+
+### 10.Adam Adaptive Moment Estimation
+
+Momentum + RMSprop
+
+初始化：
+
+$m_{t+1} = \beta m_t + (1-\beta)g_{t+1}$
+
+$v_{t+1} = \gamma v_t + (1-\gamma)g_{t+1}^2$
+
+偏差修正：
+
+$\hat{m_t} = \frac{m_t}{1-\beta^t}$
+
+$\hat{v_t} = \frac{v_t}{1-\gamma^t}$
+
+最后：
+
+$ \theta _ {t+1} = \theta_t - \frac{\eta}{\sqrt{\hat{v_t} + \varepsilon}}\hat{m_t}$
+
+### 11.Adamw Adam + wright decate
+
+效果与Adam + L2正则化相同，但是计算效率更高，因为L2正则化需要在loss中加入正则项，之后再计算梯度，但是Adamw直接将正则项的梯度加入反向传播的公式中，省去了在loss中添加正则化的过程。
+
+<img src="E:\code\note\notebook\photos\about transformer\image-20220502145530912.png" alt="image-20220502145530912" style="zoom: 67%;" />
 
